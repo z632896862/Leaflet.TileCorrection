@@ -37,14 +37,6 @@ L.Map.include({
       ._add(this._getMapPanePos())
       ._round()
   },
-  _getNewCenter: function (point, zoom, crs) {
-    const viewHalf = this.getSize()._divideBy(2)
-    return this.unproject(
-      toPoint(point)._subtract(this._getMapPanePos())._add(viewHalf),
-      zoom,
-      crs
-    )
-  },
   getPixelOrigin: function (crs) {
     this._checkIfLoaded()
     return crs ? this[crs] : this._pixelOrigin
