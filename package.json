@@ -1,0 +1,24 @@
+{
+  "name": "leaflet.tilecorrection",
+  "version": "1.0.0",
+  "description": "设置瓦片坐标系，使得图层能叠在一起",
+  "main": " src/tileCorrection.js",
+  "author": "zhaoyun",
+  "license": "MIT",
+  "dependencies": {
+    "leaflet": "^1.7.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/z632896862/Leaflet.TileCorrection.git"
+  },
+  "keywords": [
+    "leaflet",
+    "tile"
+  ],
+  "bugs": {
+    "url": "https://github.com/z632896862/Leaflet.TileCorrection/issues"
+  },
+  "homepage": "https://github.com/z632896862/Leaflet.TileCorrection#readme"
+}
