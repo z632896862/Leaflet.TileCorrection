@@ -1,7 +1,7 @@
 # Leaflet.TileCorrection
-## leaflet Tiles to be loaded in a new CRS and start at a custom zoom
-use EPSG4326 in map, use a custom CRS in tiles loading<br>
-waring：the projection of map's CRS should be same as the custom CRS
+## Leaflet Tiles to be loaded in a new CRS and start at a custom zoom
+Use EPSG4326 in map, use a custom CRS in tiles loading<br>
+Waring：the projection of map's CRS should be same as the custom CRS
 
 ### Use
 
