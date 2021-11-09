@@ -23,8 +23,6 @@ L.Map.include({
     let crs = this.options.crs
     fromZoom = fromZoom === undefined ? this._zoom : fromZoom
     if (crsName) {
-      const startZoom = this.options.customCRS[crsName].startZoom
-      console.log(startZoom)
       toZoom -= this.options.customCRS[crsName].startZoom
       crs = this.options.customCRS[crsName].crs
       fromZoom =
@@ -267,13 +265,6 @@ L.GridLayer.include({
         level[crs] = map
           .project(map.unproject(map.getPixelOrigin(crs), zoom, crs), zoom, crs)
           .round()
-        console.log(
-          'getPixelOrigin:' +
-            map.getPixelOrigin() +
-            crs +
-            map.getPixelOrigin(crs)
-        )
-        console.log('origin:' + level.origin + crs + level[crs])
       }
       level.zoom = zoom
 
