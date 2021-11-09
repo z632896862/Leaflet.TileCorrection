@@ -1,9 +1,9 @@
 # Leaflet.TileCorrection
-## leaflet切片图层自定义坐标系插件
-地图坐标系可以使用EPSG4326，切片坐标系依照切片时定义的坐标系<br>
-注：地图使用坐标系需与切片坐标系投影方式相同
+## leaflet Tiles to be loaded in a new CRS and start at a custom zoom
+use EPSG4326 in map, use a custom CRS in tiles loading<br>
+waring：the projection of map's CRS should be same as the custom CRS
 
-### 使用
+### Use
 
 npm install leaflet.tilecorrection
 
