@@ -1,8 +1,8 @@
 {
-  "name": "leaflet.tilecorrection",
+  "name": "leaflet-tilecorrection",
   "version": "1.0.0",
   "description": "设置瓦片坐标系，使得图层能叠在一起",
-  "main": " src/tileCorrection.js",
+  "main": "src/tileCorrection.js",
   "author": "zhaoyun",
   "license": "MIT",
   "dependencies": {
