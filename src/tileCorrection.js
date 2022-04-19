@@ -75,6 +75,13 @@ L.Map.include({
 L.GridLayer.include({
   _setView: function (center, zoom, noPrune, noUpdate) {
     let tileZoom = Math.round(zoom)
+    if (this.options.customCRS) {
+      if (zoom > this._map.options.customCRS[this.options.customCRS].startZoom) {
+        tileZoom -= this._map.options.customCRS[this.options.customCRS].startZoom
+      } else {
+        tileZoom = undefined
+      }
+    }
     if (
       (this.options.maxZoom !== undefined && tileZoom > this.options.maxZoom) ||
       (this.options.minZoom !== undefined && tileZoom < this.options.minZoom)
@@ -82,13 +89,6 @@ L.GridLayer.include({
       tileZoom = undefined
     } else {
       tileZoom = this._clampZoom(tileZoom)
-    }
-    if (this.options.crs) {
-      if (zoom > this._map.options.customCRS[this.options.crs].startZoom) {
-        tileZoom -= this._map.options.customCRS[this.options.crs].startZoom
-      } else {
-        tileZoom = undefined
-      }
     }
 
     const tileZoomChanged =
@@ -250,10 +250,10 @@ L.GridLayer.include({
       )
       level.el.style.zIndex = maxZoom
       level.origin = map
-        .project(map.unproject(map.getPixelOrigin()), map.getZoom())
+        .project(map.unproject(map.getPixelOrigin()), zoom)
         .round()
-      if (this.options.crs) {
-        const crs = this.options.crs
+      if (this.options.customCRS) {
+        const crs = this.options.customCRS
         level[crs] = map
           .project(map.unproject(map.getPixelOrigin(crs), zoom, crs), zoom, crs)
           .round()
@@ -277,9 +277,9 @@ L.GridLayer.include({
     const mapZoom = map._animatingZoom
       ? Math.max(map._animateToZoom, map.getZoom())
       : map.getZoom()
-    const scale = map.getZoomScale(mapZoom, this._tileZoom, this.options.crs)
+    const scale = map.getZoomScale(mapZoom, this._tileZoom, this.options.customCRS)
     const pixelCenter = map
-      .project(center, this._tileZoom, this.options.crs)
+      .project(center, this._tileZoom, this.options.customCRS)
       .floor()
     const halfSize = map.getSize().divideBy(scale * 2)
 
@@ -289,15 +289,15 @@ L.GridLayer.include({
     )
   },
   _getTilePos: function (coords) {
-    const origin = this.options.crs
-      ? this._level[this.options.crs]
+    const origin = this.options.customCRS
+      ? this._level[this.options.customCRS]
       : this._level.origin
     return coords.scaleBy(this.getTileSize()).subtract(origin)
   },
   _isValidTile: function (coords) {
     let crs = this._map.options.crs
-    if (this.options.crs) {
-      crs = this._map.options.customCRS[this.options.crs].crs
+    if (this.options.customCRS) {
+      crs = this._map.options.customCRS[this.options.customCRS].crs
     }
     if (!crs.infinite) {
       // don't load tile if it's out of bounds and not wrapped
@@ -321,14 +321,14 @@ L.GridLayer.include({
   },
   _setZoomTransform: function (level, center, zoom) {
     // zoom = this.options.minZoom ? zoom - this.options.minZoom : zoom
-    const scale = this._map.getZoomScale(zoom, level.zoom, this.options.crs)
-    const origin = this.options.crs ? level[this.options.crs] : level.origin
-    const realZoom = this.options.crs
-      ? zoom - this._map.options.customCRS[this.options.crs].startZoom
+    const scale = this._map.getZoomScale(zoom, level.zoom, this.options.customCRS)
+    const origin = this.options.customCRS ? level[this.options.customCRS] : level.origin
+    const realZoom = this.options.customCRS
+      ? zoom - this._map.options.customCRS[this.options.customCRS].startZoom
       : zoom
     const translate = origin
       .multiplyBy(scale)
-      .subtract(this._map._getNewPixelOrigin(center, realZoom, this.options.crs))
+      .subtract(this._map._getNewPixelOrigin(center, realZoom, this.options.customCRS))
       .round()
     if (Browser.any3d) {
       DomUtil.setTransform(level.el, translate, scale)

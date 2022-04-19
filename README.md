@@ -5,7 +5,7 @@ Waring：the projection of map's CRS should be same as the custom CRS
 
 ### Use
 
-npm install leaflet.tilecorrection
+npm install leaflet-tilecorrection
 
 ```javascript
 import L from "leaflet";
