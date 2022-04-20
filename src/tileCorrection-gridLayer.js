@@ -48,21 +48,20 @@ L.GridLayer.include({
   },
   _setView: function (center, zoom, noPrune, noUpdate) {
     let tileZoom = Math.round(zoom)
-    if (this.options.customCRS) {
+    if (
+      (this.options.maxZoom !== undefined && tileZoom > this.options.maxZoom) ||
+      (this.options.minZoom !== undefined && tileZoom < this.options.minZoom)
+    ) {
+      tileZoom = undefined
+    } else {
+      tileZoom = this._clampZoom(tileZoom)
+    }
+    if (this.options.customCRS && tileZoom) {
       if (zoom > this.options.customCRS.startZoom) {
         tileZoom -= this.options.customCRS.startZoom
       } else {
         tileZoom = undefined
       }
-    }
-    if (
-      (this.options.maxZoom !== undefined && tileZoom > this.options.maxZoom) ||
-      (this.options.minZoom !== undefined && tileZoom < this.options.minZoom)
-    ) {
-      // tileZoom = undefined
-      return
-    } else {
-      tileZoom = this._clampZoom(tileZoom)
     }
 
     const tileZoomChanged =
@@ -223,9 +222,10 @@ L.GridLayer.include({
         this._container
       )
       level.el.style.zIndex = maxZoom
-      level.origin = this
-        ._project(this._unproject(this._getNewPixelOrigin(map.getCenter(), zoom), zoom), zoom)
-        .round()
+      // level.origin = this
+      //   ._project(this._unproject(this._getNewPixelOrigin(map.getCenter(), zoom), zoom), zoom)
+      //   .round()
+      level.origin = this._getNewPixelOrigin(map.getCenter(), zoom).round()
       level.zoom = zoom
       this._setZoomTransform(level, map.getCenter(), map.getZoom())
 
@@ -259,7 +259,7 @@ L.GridLayer.include({
     ]
   },
   _getPixelWorldBounds: function (zoom) {
-    const crs = (this.options.customCRS && this.options.customCRS.crs) || this._map.options.crs
+    const crs = this.options.customCRS && this.options.customCRS.crs || this._map.options.crs
     return crs.getProjectedBounds(zoom === undefined ? this._map.getZoom() : zoom)
   },
   _pxBoundsToTileRange: function (bounds) {
@@ -291,7 +291,7 @@ L.GridLayer.include({
   //   return coords.scaleBy(this.getTileSize()).subtract(origin)
   // },
   _isValidTile: function (coords) {
-    const crs = (this.options.customCRS && this.options.customCRS.crs) || this._map.options.crs
+    const crs = this.options.customCRS && this.options.customCRS.crs || this._map.options.crs
     if (!crs.infinite) {
       // don't load tile if it's out of bounds and not wrapped
       const bounds = this._globalTileRange
