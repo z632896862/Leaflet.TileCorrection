@@ -1,94 +1,68 @@
-import { toPoint, Point } from 'leaflet/src/geometry/Point'
-import { toLatLng } from 'leaflet/src/geo/LatLng'
-import { Bounds } from 'leaflet/src/geometry/Bounds'
+import {
+  toPoint,
+  Point
+} from 'leaflet/src/geometry/Point'
+import {
+  toLatLng
+} from 'leaflet/src/geo/LatLng'
+import {
+  Bounds
+} from 'leaflet/src/geometry/Bounds'
 
-import { toLatLngBounds as latLngBounds } from 'leaflet/src/geo/LatLngBounds'
+import {
+  toLatLngBounds as latLngBounds
+} from 'leaflet/src/geo/LatLngBounds'
 import * as DomUtil from 'leaflet/src/dom/DomUtil'
 import * as Browser from 'leaflet/src/core/Browser'
 import * as Util from 'leaflet/src/core/Util'
-L.Map.include({
-  project: function (latlng, zoom, crs) {
-    zoom = zoom === undefined ? this._zoom : zoom
-    return crs
-      ? this.options.customCRS[crs].crs.latLngToPoint(toLatLng(latlng), zoom)
-      : this.options.crs.latLngToPoint(toLatLng(latlng), zoom)
+L.GridLayer.include({
+  _project: function (latlng, zoom) {
+    zoom = zoom === undefined ? this._map.getZoom() : zoom
+    return this.options.customCRS
+      ? this.options.customCRS.crs.latLngToPoint(toLatLng(latlng), zoom)
+      : this._map.options.crs.latLngToPoint(toLatLng(latlng), zoom)
   },
-  unproject: function (point, zoom, crs) {
-    zoom = zoom === undefined ? this._zoom : zoom
-    return crs
-      ? this.options.customCRS[crs].crs.pointToLatLng(toPoint(point), zoom)
-      : this.options.crs.pointToLatLng(toPoint(point), zoom)
+  _unproject: function (point, zoom) {
+    zoom = zoom === undefined ? this._map.getZoom() : zoom
+    return this.options.customCRS
+      ? this.options.customCRS.crs.pointToLatLng(toPoint(point), zoom)
+      : this._map.options.crs.pointToLatLng(toPoint(point), zoom)
   },
-  getZoomScale: function (toZoom, fromZoom, crsName) {
-    let crs = this.options.crs
+  _getZoomScale: function (toZoom, fromZoom) {
+    let crs = this._map.options.crs
     fromZoom = fromZoom === undefined ? this._zoom : fromZoom
-    if (crsName) {
-      toZoom -= this.options.customCRS[crsName].startZoom
-      crs = this.options.customCRS[crsName].crs
+    if (this.options.customCRS) {
+      toZoom -= this.options.customCRS.startZoom
+      crs = this.options.customCRS.crs
       fromZoom =
-        fromZoom || this._zoom - this.options.customCRS[crsName].startZoom
+        fromZoom || this._zoom - this.options.customCRS.startZoom
     }
     return crs.scale(toZoom) / crs.scale(fromZoom)
   },
-  _getNewPixelOrigin: function (center, zoom, crs) {
-    const viewHalf = this.getSize()._divideBy(2)
-    return this.project(center, zoom, crs)
+  _getNewPixelOrigin: function (center, zoom) {
+    const viewHalf = this._map.getSize()._divideBy(2)
+    return this._project(center, zoom)
       ._subtract(viewHalf)
-      ._add(this._getMapPanePos())
+      ._add(this._map._getMapPanePos())
       ._round()
   },
-  getPixelOrigin: function (crs) {
-    this._checkIfLoaded()
-    return crs ? this[crs] : this._pixelOrigin
-  },
-  _move: function (center, zoom, data) {
-    if (zoom === undefined) {
-      zoom = this._zoom
-    }
-    const zoomChanged = this._zoom !== zoom
-
-    this._zoom = zoom
-    this._lastCenter = center
-    this._pixelOrigin = this._getNewPixelOrigin(center)
-
-    const crss = Object.keys(this.options.customCRS)
-    crss.forEach((crs) => {
-      if (zoom >= this.options.customCRS[crs].startZoom) {
-        const tileZoom = zoom - this.options.customCRS[crs].startZoom
-        this[crs] = this._getNewPixelOrigin(center, tileZoom, crs)
-      }
-    })
-    // @event zoom: Event
-    // Fired repeatedly during any change in zoom level, including zoom
-    // and fly animations.
-    if (zoomChanged || (data && data.pinch)) {
-      // Always fire 'zoom' if pinching because #3530
-      this.fire('zoom', data)
-    }
-
-    // @event move: Event
-    // Fired repeatedly during any movement of the map, including pan and
-    // fly animations.
-    return this.fire('move', data)
-  }
-})
-L.GridLayer.include({
   _setView: function (center, zoom, noPrune, noUpdate) {
     let tileZoom = Math.round(zoom)
+    if (this.options.customCRS) {
+      if (zoom > this.options.customCRS.startZoom) {
+        tileZoom -= this.options.customCRS.startZoom
+      } else {
+        tileZoom = undefined
+      }
+    }
     if (
       (this.options.maxZoom !== undefined && tileZoom > this.options.maxZoom) ||
       (this.options.minZoom !== undefined && tileZoom < this.options.minZoom)
     ) {
-      tileZoom = undefined
+      // tileZoom = undefined
+      return
     } else {
       tileZoom = this._clampZoom(tileZoom)
-    }
-    if (this.options.customCRS && tileZoom) {
-      if (zoom > this._map.options.customCRS[this.options.customCRS].startZoom) {
-        tileZoom -= this._map.options.customCRS[this.options.customCRS].startZoom
-      } else {
-        tileZoom = undefined
-      }
     }
 
     const tileZoomChanged =
@@ -249,17 +223,10 @@ L.GridLayer.include({
         this._container
       )
       level.el.style.zIndex = maxZoom
-      level.origin = map
-        .project(map.unproject(map.getPixelOrigin()), zoom)
+      level.origin = this
+        ._project(this._unproject(this._getNewPixelOrigin(map.getCenter(), zoom), zoom), zoom)
         .round()
-      if (this.options.customCRS) {
-        const crs = this.options.customCRS
-        level[crs] = map
-          .project(map.unproject(map.getPixelOrigin(crs), zoom, crs), zoom, crs)
-          .round()
-      }
       level.zoom = zoom
-
       this._setZoomTransform(level, map.getCenter(), map.getZoom())
 
       // force the browser to consider the newly added element for transition
@@ -273,7 +240,7 @@ L.GridLayer.include({
     return level
   },
   _resetGrid: function () {
-    const crs = (this.options.customCRS && this._map.options.customCRS[this.options.customCRS] && this._map.options.customCRS[this.options.customCRS].crs) || this._map.options.crs
+    const crs = (this.options.customCRS && this.options.customCRS.crs) || this._map.options.crs
     const tileSize = this._tileSize = this.getTileSize()
     const tileZoom = this._tileZoom
 
@@ -283,26 +250,32 @@ L.GridLayer.include({
     }
 
     this._wrapX = crs.wrapLng && !this.options.noWrap && [
-      Math.floor(this._map.project([0, crs.wrapLng[0]], tileZoom).x / tileSize.x),
-      Math.ceil(this._map.project([0, crs.wrapLng[1]], tileZoom).x / tileSize.y)
+      Math.floor(this._project([0, crs.wrapLng[0]], tileZoom).x / tileSize.x),
+      Math.ceil(this._project([0, crs.wrapLng[1]], tileZoom).x / tileSize.y)
     ]
     this._wrapY = crs.wrapLat && !this.options.noWrap && [
-      Math.floor(this._map.project([crs.wrapLat[0], 0], tileZoom).y / tileSize.x),
-      Math.ceil(this._map.project([crs.wrapLat[1], 0], tileZoom).y / tileSize.y)
+      Math.floor(this._project([crs.wrapLat[0], 0], tileZoom).y / tileSize.x),
+      Math.ceil(this._project([crs.wrapLat[1], 0], tileZoom).y / tileSize.y)
     ]
   },
   _getPixelWorldBounds: function (zoom) {
-    const crs = (this.options.customCRS && this._map.options.customCRS[this.options.customCRS] && this._map.options.customCRS[this.options.customCRS].crs) || this._map.options.crs
+    const crs = (this.options.customCRS && this.options.customCRS.crs) || this._map.options.crs
     return crs.getProjectedBounds(zoom === undefined ? this._map.getZoom() : zoom)
+  },
+  _pxBoundsToTileRange: function (bounds) {
+    const tileSize = this.getTileSize()
+    return new Bounds(
+      bounds.min.unscaleBy(tileSize).floor(),
+      bounds.max.unscaleBy(tileSize).ceil().subtract([1, 1]))
   },
   _getTiledPixelBounds: function (center) {
     const map = this._map
     const mapZoom = map._animatingZoom
       ? Math.max(map._animateToZoom, map.getZoom())
       : map.getZoom()
-    const scale = map.getZoomScale(mapZoom, this._tileZoom, this.options.customCRS)
-    const pixelCenter = map
-      .project(center, this._tileZoom, this.options.customCRS)
+    const scale = this._getZoomScale(mapZoom, this._tileZoom)
+    const pixelCenter = this
+      ._project(center, this._tileZoom)
       .floor()
     const halfSize = map.getSize().divideBy(scale * 2)
 
@@ -311,17 +284,14 @@ L.GridLayer.include({
       pixelCenter.add(halfSize)
     )
   },
-  _getTilePos: function (coords) {
-    const origin = this.options.customCRS
-      ? this._level[this.options.customCRS]
-      : this._level.origin
-    return coords.scaleBy(this.getTileSize()).subtract(origin)
-  },
+  // _getTilePos: function (coords) {
+  //   const origin = this.options.customCRS
+  //     ? this._level[this.options.customCRS]
+  //     : this._level.origin
+  //   return coords.scaleBy(this.getTileSize()).subtract(origin)
+  // },
   _isValidTile: function (coords) {
-    let crs = this._map.options.crs
-    if (this.options.customCRS) {
-      crs = this._map.options.customCRS[this.options.customCRS].crs
-    }
+    const crs = (this.options.customCRS && this.options.customCRS.crs) || this._map.options.crs
     if (!crs.infinite) {
       // don't load tile if it's out of bounds and not wrapped
       const bounds = this._globalTileRange
@@ -344,14 +314,10 @@ L.GridLayer.include({
   },
   _setZoomTransform: function (level, center, zoom) {
     // zoom = this.options.minZoom ? zoom - this.options.minZoom : zoom
-    const scale = this._map.getZoomScale(zoom, level.zoom, this.options.customCRS)
-    const origin = this.options.customCRS ? level[this.options.customCRS] : level.origin
-    const realZoom = this.options.customCRS
-      ? zoom - this._map.options.customCRS[this.options.customCRS].startZoom
-      : zoom
-    const translate = origin
+    const scale = this._getZoomScale(zoom, level.zoom)
+    const translate = level.origin
       .multiplyBy(scale)
-      .subtract(this._map._getNewPixelOrigin(center, realZoom, this.options.customCRS))
+      .subtract(this._getNewPixelOrigin(center, this._tileZoom))
       .round()
     if (Browser.any3d) {
       DomUtil.setTransform(level.el, translate, scale)
