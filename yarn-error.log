@@ -1,0 +1,62 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\yarn\bin\yarn.js
+
+PATH: 
+  C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;D:\Git\cmd;D:\apache-maven-3.6.3\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\110\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\Microsoft SQL Server\120\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;D:\Program Files (x86)\NetSarang\Xftp 7\;C:\Program Files\Common Files\Autodesk Shared\;D:\Program Files (x86)\NetSarang\Xshell 7\;C:\Program Files\nodejs\;C:\Users\Administrator\.cargo\bin;C:\Users\Administrator\AppData\Local\Programs\Python\Python38\Scripts\;C:\Users\Administrator\AppData\Local\Programs\Python\Python38\;C:\Users\Administrator\AppData\Local\Programs\Python\Python37\Scripts\;C:\Users\Administrator\AppData\Local\Programs\Python\Python37\;C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps;C:\Python27;D:\Users\Administrator\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Administrator\.dotnet\tools;D:\Program Files\JetBrains\PyCharm Community Edition 2020.3.2\bin;D:\fiddler;C:\Users\Administrator\AppData\Roaming\npm
+
+Yarn version: 
+  1.22.18
+
+Node version: 
+  16.14.2
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: getaddrinfo EAI_AGAIN registry.npmjs.org
+      at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:71:26)
+
+npm manifest: 
+  {
+    "name": "leaflet-tilecorrection",
+    "version": "1.1.0",
+    "description": "设置瓦片坐标系，使得图层能叠在一起",
+    "main": "dist/tileCorrection.min.js",
+    "author": "zhaoyun",
+    "license": "MIT",
+    "dependencies": {
+      "leaflet": "^1.7.1"
+    },
+    "devDependencies": {
+      "eslint": "^7.32.0",
+      "eslint-config-standard": "^16.0.3",
+      "eslint-plugin-import": "^2.26.0",
+      "eslint-plugin-node": "^11.1.0",
+      "eslint-plugin-promise": "^5.2.0",
+      "webpack": "^5.72.0",
+      "webpack-cli": "^4.9.2"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/z632896862/Leaflet.TileCorrection.git"
+    },
+    "keywords": [
+      "leaflet",
+      "tile"
+    ],
+    "bugs": {
+      "url": "https://github.com/z632896862/Leaflet.TileCorrection/issues"
+    },
+    "homepage": "https://github.com/z632896862/Leaflet.TileCorrection#readme",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "webpack"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
